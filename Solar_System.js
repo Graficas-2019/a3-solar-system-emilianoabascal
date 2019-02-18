@@ -20,6 +20,7 @@ var currentTime = Date.now();
 var mercury,venus,earth,moon,mars,jupiter,saturn,uranus,neptune,rings;
 var mercpath
 var merpot
+var fs = require('fs')
 function animate()
 {
     var now = Date.now();
@@ -116,8 +117,8 @@ function createScene(canvas)
     // scene.background = new THREE.Color( "rgb(100, 100, 100)" );
 
     // Add  a camera so we can view the scene
-    camera = new THREE.PerspectiveCamera(45, canvas.width/canvas.height, 5, 4000);
-    camera.position.set(0, -100, 100);
+    camera = new THREE.PerspectiveCamera(45, canvas.width/canvas.height, 1, 4000);
+    camera.position.set(0, -50, 100);
     scene.add(camera);
 
     SolarSystem = new THREE.Object3D;
@@ -161,15 +162,8 @@ function createScene(canvas)
     venus = new THREE.Mesh(geometry, material);
 
     // Earth
-    geometry = new THREE.SphereGeometry(1, 20, 20);
-    var earthMapUrl = "images/earth.jpg";
-    var earthNormalMapUrl = "images/earthnormal.jpg";
-    var earthspecularMapUrl = "images/earthspecular.jpg";
-    map = new THREE.TextureLoader().load(earthMapUrl);
-    normalMap = new THREE.TextureLoader().load(earthNormalMapUrl);
-    specularMap = new THREE.TextureLoader().load(earthspecularMapUrl);
-    var earth_materials = new THREE.MeshPhongMaterial({ map: map, normalMap: normalMap, specularMap: specularMap });
-    earth = new THREE.Mesh(geometry, earth_materials);
+    earth = createPlanet(1, "images/earth.jpg", "images/earthnormal.jpg", "images/earthnormal.jpg", planetBumpUrl)
+    mars = createPlanet("mars", 2)
 
     geometry = new THREE.SphereGeometry(2, 20, 20);
     var merctextureUrl = "images/mars.jpg";
@@ -211,7 +205,7 @@ function createScene(canvas)
     sun.rotation.x = Math.PI /2;
     mercury.rotation.x = Math.PI /2;
     venus.rotation.x = Math.PI /2;
-    earth.rotation.x = Math.PI /2;
+    // earth.rotation.x = Math.PI /2;
     jupiter.rotation.x = Math.PI /2;
     saturn.rotation.x = Math.PI /2;
     neptune.rotation.x = Math.PI /2;
@@ -219,7 +213,7 @@ function createScene(canvas)
     // pluto.rotation.x = Math.PI /2;
 
     mercpath = new THREE.EllipseCurve(0,0,25,20,0,  2 * Math.PI,true,0);
-    
+
     var merpot = mercpath.getPoints(50);
     var geometry = new THREE.BufferGeometry().setFromPoints( merpot );
     var material = new THREE.MeshPhongMaterial( {color: 'white', } );
@@ -231,11 +225,11 @@ function createScene(canvas)
     var material = new THREE.MeshPhongMaterial( {color: 'white', } );
     var ellipseVen = new THREE.Line( geometry, material );
 
-    var earthpath = new THREE.EllipseCurve(0,0,38,32,0,  2 * Math.PI,false,0);
-    var points = earthpath.getPoints( 50 );
-    var geometry = new THREE.BufferGeometry().setFromPoints( points );
-    var material = new THREE.MeshPhongMaterial( {color: 'white', } );
-    var ellipseEart = new THREE.Line( geometry, material );
+    // var earthpath = new THREE.EllipseCurve(0,0,38,32,0,  2 * Math.PI,false,0);
+    // var points = earthpath.getPoints( 50 );
+    // var geometry = new THREE.BufferGeometry().setFromPoints( points );
+    // var material = new THREE.MeshPhongMaterial( {color: 'white', } );
+    // var ellipseEart = new THREE.Line( geometry, material );
 
     var marspath = new THREE.EllipseCurve(0,0,45,38,0,  2 * Math.PI,false,0);
     var points = marspath.getPoints( 50 );
@@ -273,7 +267,7 @@ function createScene(canvas)
 
     sphereEllipse.add( ellipseMer );
     sphereEllipse.add( ellipseVen );
-    sphereEllipse.add( ellipseEart );
+    // sphereEllipse.add( ellipseEart );
     sphereEllipse.add( ellipseMart );
     sphereEllipse.add( ellipseJup );
     sphereEllipse.add( ellipseSat );
@@ -314,4 +308,55 @@ function createScene(canvas)
 
 function getRandomArbitrary(min, max) {
     return Math.random() * (max - min) + min;
+}
+
+function createPlanet (planetSize, planetMapURL, planetNormalMapUrl, planetSpecularMapUrl, planetBumpUrl){
+  var maps = {}
+  if(planetNormalMapUrl != ''){
+    normalMapLoad = new THREE.TextureLoader().load(planetNormalMapUrl);
+    maps['normalMap'] = normalMapLoad;
+  }
+  if(planetSpecularMapUrl != ''){
+    specularMapLoaded = new THREE.TextureLoader().load(planetSpecularMapUrl);
+    maps['specularMap'] = specularMapLoaded;
+  }
+  if(planetBumpUrl != ''){
+    bumpMapLoaded = new THREE.TextureLoader().load(planetBumpUrl);
+    maps['bumpMap'] = bumpMapLoaded;
+    maps['bumpScale'] = 1.5;
+
+  }
+  mapLoaded = new THREE.TextureLoader().load(planetMapURL);
+  geometry = new THREE.SphereGeometry(planetSize, 20, 20);
+  maps['map'] = mapLoaded;
+
+  var planetMaterials = new THREE.MeshPhongMaterial(maps);
+
+  console.log(planetMaterials);
+
+
+  planet = new THREE.Mesh(geometry, planetMaterials);
+  planet.rotation.x = Math.PI /2;
+  return planet;
+}
+
+
+
+function checkIfFileExists(url){
+  var x;
+  $.ajax({
+    x:x,
+    url:url,
+    type:'HEAD',
+    error: function()
+    {
+        x = 0
+    },
+    success: function()
+    {
+        x = 1
+
+    }
+});
+return x;
 }
